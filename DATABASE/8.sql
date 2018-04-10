@@ -1,0 +1,125 @@
+use S_univer;
+
+--task1
+select min(AUDITORIUM_CAPACITY) [minimum  capacity],
+		max(AUDITORIUM_CAPACITY) [maximum capacity],
+		count(AUDITORIUM_CAPACITY) [midle capacity]
+from AUDITORIUM
+--task 2
+
+select	AUDITORIUM_TYPE.AUDITORIUM_TYPENAME,
+		 min(AUDITORIUM_CAPACITY) [minimum  capacity],
+		max(AUDITORIUM_CAPACITY) [maximum capacity],
+		count(AUDITORIUM_CAPACITY) [midle capacity],
+		sum(AUDITORIUM_CAPACITY) [sum capacity]
+from AUDITORIUM join AUDITORIUM_TYPE	
+	on AUDITORIUM.AUDITORIUM_TYPE=AUDITORIUM_TYPE.AUDITORIUM_TYPE
+group by AUDITORIUM_TYPE.AUDITORIUM_TYPENAME
+--task 3
+
+select *
+from (select case
+	when PROGRESS.NOTE>9 then '9'
+	when PROGRESS.NOTE between 8 and 9 then '9-8'
+	when PROGRESS.NOTE between 6 and 7 then '7-6'
+	else '5-4'
+	end [nots], count(PROGRESS.NOTE) [count]
+	from PROGRESS group by 
+	case
+	when PROGRESS.NOTE>9 then '9'
+	when PROGRESS.NOTE between 8 and 9 then '9-8'
+	when PROGRESS.NOTE between 6 and 7 then '7-6'
+	else '5-4'
+	end  ) as t
+ORDER BY  Case [nots]
+   when '9' then 3
+   when '9-8' then 2
+   when '7-6' then 1
+   else 0
+   end  
+
+	
+--task 4
+select FACULTY.FACULTY_NAME, GROUPS.PROFESSION,STUDENT.STAMP,round(avg(cast( PROGRESS.NOTE AS float(4))),2)[midl value]
+from FACULTY join GROUPS 
+	on FACULTY.FACULTY=GROUPS.FACULTY
+	join STUDENT
+		on STUDENT.IDGROUP=groups.IDGROUP
+			join PROGRESS
+				on PROGRESS.IDSTUDENT=STUDENT.IDSTUDENT
+GROUP BY FACULTY.FACULTY_NAME, GROUPS.PROFESSION,STUDENT.STAMP
+
+
+--TASK 5
+select FACULTY.FACULTY_NAME, GROUPS.PROFESSION,STUDENT.STAMP,round(avg(cast( PROGRESS.NOTE AS float(4))),2)[midl value]
+from FACULTY join GROUPS 
+	on FACULTY.FACULTY=GROUPS.FACULTY
+	join STUDENT
+		on STUDENT.IDGROUP=groups.IDGROUP
+			join PROGRESS
+				on PROGRESS.IDSTUDENT=STUDENT.IDSTUDENT
+					join subject 
+						on SUBJECT.SUBJECT=PROGRESS.SUBJECT
+where SUBJECT.SUBJECT like '%¡ƒ%' or SUBJECT.SUBJECT like '%Œ¿Ëœ%'
+GROUP BY FACULTY.FACULTY_NAME, GROUPS.PROFESSION,STUDENT.STAMP
+
+
+--task 6
+select groups.PROFESSION,SUBJECT.SUBJECT_NAME,round(avg(cast( PROGRESS.NOTE AS float(4))),2)[midl value]
+from FACULTY join GROUPS 
+	on FACULTY.FACULTY=GROUPS.FACULTY
+	join STUDENT
+		on STUDENT.IDGROUP=groups.IDGROUP
+			join PROGRESS
+				on PROGRESS.IDSTUDENT=STUDENT.IDSTUDENT
+					join subject 
+						on SUBJECT.SUBJECT=PROGRESS.SUBJECT
+group by ROLLUP (groups.PROFESSION,SUBJECT.SUBJECT_NAME)
+--TASK 7
+
+select groups.PROFESSION,SUBJECT.SUBJECT_NAME,round(avg(cast( PROGRESS.NOTE AS float(4))),2)[midl value]
+from FACULTY join GROUPS 
+	on FACULTY.FACULTY=GROUPS.FACULTY
+	join STUDENT
+		on STUDENT.IDGROUP=groups.IDGROUP
+			join PROGRESS
+				on PROGRESS.IDSTUDENT=STUDENT.IDSTUDENT
+					join subject 
+						on SUBJECT.SUBJECT=PROGRESS.SUBJECT
+group by CUBE (groups.PROFESSION,SUBJECT.SUBJECT_NAME)
+
+
+--task 8
+select GROUPS.PROFESSION, PROGRESS.SUBJECT, round(avg(cast( PROGRESS.NOTE AS float(4))),2)[midl value]
+FROM GROUPS, PROGRESS
+WHERE GROUPS.FACULTY LIKE '%’“Ë“%'
+GROUP BY GROUPS.PROFESSION, PROGRESS.SUBJECT
+--task 9
+select GROUPS.PROFESSION, PROGRESS.SUBJECT, round(avg(cast( PROGRESS.NOTE AS float(4))),2)[midl value]
+FROM GROUPS, PROGRESS
+GROUP BY GROUPS.PROFESSION, PROGRESS.SUBJECT
+intersect 
+select GROUPS.PROFESSION, PROGRESS.SUBJECT, round(avg(cast( PROGRESS.NOTE AS float(4))),2)[midl value]
+FROM GROUPS, PROGRESS
+WHERE GROUPS.FACULTY LIKE '%’“Ë“%'
+GROUP BY GROUPS.PROFESSION, PROGRESS.SUBJECT
+--task 10
+select GROUPS.PROFESSION, PROGRESS.SUBJECT, round(avg(cast( PROGRESS.NOTE AS float(4))),2)[midl value]
+FROM GROUPS, PROGRESS
+GROUP BY GROUPS.PROFESSION, PROGRESS.SUBJECT
+except
+select GROUPS.PROFESSION, PROGRESS.SUBJECT, round(avg(cast( PROGRESS.NOTE AS float(4))),2)[midl value]
+FROM GROUPS, PROGRESS
+WHERE GROUPS.FACULTY LIKE '%’“Ë“%'
+GROUP BY GROUPS.PROFESSION, PROGRESS.SUBJECT
+
+--task 11
+
+select p2.SUBJECT, p2.note, 
+	(select count(*) from progress as p1	
+	 where  p1.SUBJECT=p2.SUBJECT and p1.NOTE=p2.NOTE)[count]
+from PROGRESS as p2
+group by p2.SUBJECT, p2.NOTE
+having p2.note=8 or	p2.note=9
+order by p2.NOTE
+
